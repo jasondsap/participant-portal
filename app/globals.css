@@ -1,0 +1,179 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =============================================================================
+   Participant Portal - Global Styles
+   ============================================================================= */
+
+:root {
+  --portal-primary: #5B7C99;
+  --portal-secondary: #4A9B9B;
+  --portal-background: #F7F8FA;
+  --portal-surface: #FFFFFF;
+  --portal-text: #374151;
+  --portal-muted: #6B7280;
+  --portal-border: #E5E7EB;
+  --portal-success: #10B981;
+  --portal-warning: #F59E0B;
+  --portal-error: #EF4444;
+}
+
+body {
+  background-color: var(--portal-background);
+  color: var(--portal-text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* PWA iOS Fixes */
+@supports (-webkit-touch-callout: none) {
+  .min-h-screen {
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Focus Styles */
+*:focus-visible {
+  outline: 2px solid var(--portal-primary);
+  outline-offset: 2px;
+}
+
+/* Input Styles */
+input, textarea, select {
+  @apply rounded-lg border border-portal-border bg-white px-4 py-3 text-portal-text placeholder-portal-muted;
+  @apply focus:border-portal-primary focus:ring-2 focus:ring-portal-primary/20 focus:outline-none;
+  @apply transition-colors duration-200;
+}
+
+/* Button Base Styles */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-primary {
+  @apply btn bg-portal-primary text-white hover:bg-portal-primary/90 focus:ring-portal-primary;
+}
+
+.btn-secondary {
+  @apply btn bg-portal-secondary text-white hover:bg-portal-secondary/90 focus:ring-portal-secondary;
+}
+
+.btn-outline {
+  @apply btn border border-portal-border bg-white text-portal-text hover:bg-gray-50 focus:ring-portal-primary;
+}
+
+.btn-ghost {
+  @apply btn text-portal-muted hover:bg-gray-100 hover:text-portal-text focus:ring-portal-primary;
+}
+
+/* Card Styles */
+.card {
+  @apply bg-white rounded-xl shadow-sm border border-portal-border;
+}
+
+.card-hover {
+  @apply card transition-shadow hover:shadow-md cursor-pointer;
+}
+
+/* Badge Styles */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-primary {
+  @apply badge bg-portal-primary/10 text-portal-primary;
+}
+
+.badge-success {
+  @apply badge bg-portal-success/10 text-portal-success;
+}
+
+.badge-warning {
+  @apply badge bg-portal-warning/10 text-portal-warning;
+}
+
+.badge-error {
+  @apply badge bg-portal-error/10 text-portal-error;
+}
+
+/* Progress Bar */
+.progress-bar {
+  @apply h-2 bg-gray-200 rounded-full overflow-hidden;
+}
+
+.progress-bar-fill {
+  @apply h-full bg-portal-secondary rounded-full transition-all duration-500;
+}
+
+/* Animation Classes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Message Bubble Styles */
+.message-bubble-sent {
+  @apply bg-portal-primary text-white rounded-2xl rounded-br-md px-4 py-2;
+}
+
+.message-bubble-received {
+  @apply bg-white border border-portal-border rounded-2xl rounded-bl-md px-4 py-2;
+}
+
+/* Safe Area Padding for Mobile */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Loading Skeleton */
+.skeleton {
+  @apply bg-gray-200 rounded animate-pulse;
+}
