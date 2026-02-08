@@ -19,7 +19,7 @@ export default function SignInPage() {
                         <Heart className="w-8 h-8 text-white" />
                     </div>
                     <h1 className="text-2xl font-bold text-portal-text">Welcome Back</h1>
-                    <p className="text-portal-muted mt-1">Sign in to your recovery portal</p>
+                    <p className="text-portal-muted mt-1">Sign in to your portal</p>
                 </div>
 
                 {/* Error Message */}

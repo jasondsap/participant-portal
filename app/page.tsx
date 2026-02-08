@@ -3,7 +3,7 @@
 import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { Heart, MessageCircle, Target, Shield, ArrowRight, Loader2 } from 'lucide-react';
+import { Heart, MessageCircle, Target, Shield, ArrowRight, Loader2, BookHeart, Activity, Calendar } from 'lucide-react';
 
 export default function LandingPage() {
     const { data: session, status } = useSession();
@@ -81,6 +81,21 @@ export default function LandingPage() {
                         description="See your progress and celebrate your achievements"
                     />
                     <FeatureCard
+                        icon={<Calendar className="w-6 h-6" />}
+                        title="Upcoming Sessions"
+                        description="View your scheduled sessions and stay on track"
+                    />
+                    <FeatureCard
+                        icon={<Activity className="w-6 h-6" />}
+                        title="Recovery Assessments"
+                        description="Complete assessments and track your recovery capital over time"
+                    />
+                    <FeatureCard
+                        icon={<BookHeart className="w-6 h-6" />}
+                        title="Personal Journal"
+                        description="Reflect on your journey with mood tracking and optional sharing"
+                    />
+                    <FeatureCard
                         icon={<Shield className="w-6 h-6" />}
                         title="Private & Secure"
                         description="Your information is protected and confidential"
@@ -91,7 +106,7 @@ export default function LandingPage() {
             {/* Footer */}
             <footer className="px-6 py-8 text-center text-sm text-portal-muted">
                 <p>Powered by Peer Support Studio</p>
-                <p className="mt-1">© {new Date().getFullYear()} MADe180. All rights reserved.</p>
+                <p className="mt-1">&copy; {new Date().getFullYear()} MADe180. All rights reserved.</p>
             </footer>
         </div>
     );
