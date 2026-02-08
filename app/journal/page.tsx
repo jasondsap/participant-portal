@@ -186,11 +186,10 @@ function EntryCard({
                 <div className="flex items-center gap-2">
                     {/* Share indicator */}
                     <span
-                        className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                            entry.shared_with_pss
+                        className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${entry.shared_with_pss
                                 ? 'bg-blue-50 text-blue-600'
                                 : 'bg-gray-100 text-gray-500'
-                        }`}
+                            }`}
                         title={entry.shared_with_pss ? 'Shared with your peer support specialist' : 'Private — only you can see this'}
                     >
                         {entry.shared_with_pss ? (
@@ -257,12 +256,11 @@ function EntryCard({
                                 <button
                                     key={m.value}
                                     onClick={() => setEditMood(editMood === m.value ? null : m.value)}
-                                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all ${
-                                        editMood === m.value
-                                            ? 'ring-2 ring-offset-1 bg-gray-100'
-                                            : 'bg-gray-50 hover:bg-gray-100'
-                                    }`}
-                                    style={editMood === m.value ? { ringColor: m.color } : {}}
+                                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all border-2 ${editMood === m.value
+                                            ? 'bg-gray-100'
+                                            : 'border-transparent bg-gray-50 hover:bg-gray-100'
+                                        }`}
+                                    style={editMood === m.value ? { borderColor: m.color } : {}}
                                 >
                                     <span>{m.emoji}</span>
                                     <span className="text-gray-700">{m.label}</span>
@@ -379,11 +377,10 @@ function NewEntryComposer({
                             <button
                                 key={m.value}
                                 onClick={() => setMood(mood === m.value ? null : m.value)}
-                                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all border-2 ${
-                                    mood === m.value
+                                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all border-2 ${mood === m.value
                                         ? 'border-current bg-opacity-10 scale-105'
                                         : 'border-transparent bg-gray-50 hover:bg-gray-100'
-                                }`}
+                                    }`}
                                 style={mood === m.value ? { color: m.color, borderColor: m.color, backgroundColor: `${m.color}15` } : {}}
                             >
                                 <span className="text-lg">{m.emoji}</span>
