@@ -132,6 +132,66 @@ function SessionStatusBadge({ status, isOverdue }: { status: string; isOverdue?:
     );
 }
 
+// ─── Add to Calendar (.ics) ──────────────────────────────────────────────────
+
+function addToCalendar(session: Session) {
+    const pssName = session.pss_first_name
+        ? `${session.pss_first_name} ${session.pss_last_name || ''}`.trim()
+        : '';
+
+    const title = `${session.service_type === 'group' ? 'Group' : 'Individual'} Session${pssName ? ` with ${pssName}` : ''}`;
+
+    const settingLabels: Record<string, string> = {
+        outpatient: 'Outpatient Office', inpatient: 'Inpatient Facility',
+        telehealth: 'Telehealth (Virtual)', community: 'Community Setting',
+        home: 'Home Visit', office: 'Office',
+    };
+    const location = settingLabels[session.setting] || session.setting;
+
+    const description = [
+        `${session.planned_duration} min ${getSettingLabel(session.setting)} session`,
+        pssName && `With: ${pssName}`,
+        session.notes && `Notes: ${session.notes}`,
+    ].filter(Boolean).join('\\n');
+
+    // Build start/end times
+    const datePart = session.planned_date.split('T')[0];
+    let startHour = 9, startMin = 0;
+    if (session.planned_time) {
+        const [h, m] = session.planned_time.split(':').map(Number);
+        startHour = h;
+        startMin = m;
+    }
+    const startDate = new Date(`${datePart}T${String(startHour).padStart(2, '0')}:${String(startMin).padStart(2, '0')}:00`);
+    const endDate = new Date(startDate.getTime() + session.planned_duration * 60000);
+
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const toIcs = (d: Date) =>
+        `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+
+    const ics = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Recovery Portal//Sessions//EN',
+        'BEGIN:VEVENT',
+        `DTSTART:${toIcs(startDate)}`,
+        `DTEND:${toIcs(endDate)}`,
+        `SUMMARY:${title}`,
+        `DESCRIPTION:${description}`,
+        `LOCATION:${location}`,
+        'END:VEVENT',
+        'END:VCALENDAR'
+    ].join('\r\n');
+
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `session-${datePart}.ics`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
 // ─── Session Card ─────────────────────────────────────────────────────────────
 
 function SessionCard({ session, isNext }: { session: Session; isNext?: boolean }) {
@@ -229,6 +289,17 @@ function SessionCard({ session, isNext }: { session: Session; isNext?: boolean }
                         {!formattedTime && ' — check with your PSS for the exact time'}
                     </p>
                 </div>
+            )}
+
+            {/* Add to Calendar - only for upcoming sessions */}
+            {['planned', 'approved'].includes(session.status) && !overdue && (
+                <button
+                    onClick={() => addToCalendar(session)}
+                    className="mt-3 w-full flex items-center justify-center gap-2 py-2 text-xs font-medium text-portal-primary bg-portal-primary/5 rounded-lg hover:bg-portal-primary/10 transition-colors border border-portal-primary/10"
+                >
+                    <CalendarCheck className="w-3.5 h-3.5" />
+                    Add to Calendar
+                </button>
             )}
         </div>
     );
