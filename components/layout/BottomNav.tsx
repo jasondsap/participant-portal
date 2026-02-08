@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, MessageCircle, Target, Settings } from 'lucide-react';
+import { Home, MessageCircle, BookHeart, Settings } from 'lucide-react';
 
 const navItems = [
     { href: '/dashboard', icon: Home, label: 'Home' },
     { href: '/messages', icon: MessageCircle, label: 'Messages' },
-    { href: '/goals', icon: Target, label: 'Goals' },
+    { href: '/journal', icon: BookHeart, label: 'Journal' },
     { href: '/settings', icon: Settings, label: 'Settings' },
 ];
 
