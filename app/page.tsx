@@ -56,16 +56,11 @@ export default function LandingPage() {
                         onClick={() => signIn('cognito', { callbackUrl: '/dashboard' })}
                         className="w-full btn-primary py-4 text-lg mb-4"
                     >
-                        Sign In
+                        Sign In/Create Account
                         <ArrowRight className="w-5 h-5" />
                     </button>
 
-                    <p className="text-sm text-portal-muted">
-                        Don't have an account?{' '}
-                        <a href="/auth/register" className="text-portal-primary hover:underline">
-                            Request access
-                        </a>
-                    </p>
+                    
                 </div>
 
                 {/* Features */}
