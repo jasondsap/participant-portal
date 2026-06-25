@@ -18,7 +18,7 @@ export default function SignInPage() {
                     <div className="w-16 h-16 bg-portal-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <Heart className="w-8 h-8 text-white" />
                     </div>
-                    <h1 className="text-2xl font-bold text-portal-text">Welcome Back</h1>
+                    <h1 className="text-2xl font-bold text-portal-text">Welcome</h1>
                     <p className="text-portal-muted mt-1">Sign in to your portal</p>
                 </div>
 
@@ -49,10 +49,9 @@ export default function SignInPage() {
                 {/* Help Text */}
                 <div className="mt-6 text-center text-sm text-portal-muted">
                     <p>
-                        Don't have an account?{' '}
-                        <Link href="/auth/register" className="text-portal-primary hover:underline">
-                            Request access
-                        </Link>
+                        Use the email and temporary password your peer support
+                        specialist sent you. You&apos;ll set your own password on
+                        first sign-in.
                     </p>
                 </div>
 

@@ -56,9 +56,14 @@ export default function LandingPage() {
                         onClick={() => signIn('cognito', { callbackUrl: '/dashboard' })}
                         className="w-full btn-primary py-4 text-lg mb-4"
                     >
-                        Sign In/Create Account
+                        Sign In
                         <ArrowRight className="w-5 h-5" />
                     </button>
+
+                    <p className="text-sm text-portal-muted">
+                        Your peer support specialist will set up your account and
+                        email you a temporary password to get started.
+                    </p>
 
                     
                 </div>
