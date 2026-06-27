@@ -1,4 +1,5 @@
 import { neon } from '@neondatabase/serverless';
+import { groupReactions, type ReactionRow } from './reactions';
 
 // Create SQL query function
 export const sql = neon(process.env.DATABASE_URL!);
@@ -209,8 +210,83 @@ export async function getConversationMessages(conversationId: string, participan
         ORDER BY m.created_at ASC
         LIMIT ${limit}
     `;
-    
+
+    // Attach grouped reactions (from staff and the participant), "mine" keyed to
+    // the current participant.
+    const ids = (messages as any[]).map((m) => m.id);
+    if (ids.length > 0) {
+        const reactionRows = (await sql`
+            SELECT mr.message_id, mr.emoji,
+                   COALESCE(mr.user_id::text, mr.participant_id::text) AS reactor_id,
+                   COALESCE(
+                       u.first_name || ' ' || u.last_name,
+                       COALESCE(p.preferred_name, p.first_name) || ' ' || p.last_name
+                   ) AS reactor_name
+            FROM message_reactions mr
+            LEFT JOIN users u ON mr.user_id = u.id
+            LEFT JOIN participants p ON mr.participant_id = p.id
+            WHERE mr.message_id = ANY(${ids}::uuid[])
+            ORDER BY mr.created_at
+        `) as ReactionRow[];
+        const byMessage = groupReactions(reactionRows, participantId);
+        for (const m of messages as any[]) {
+            m.reactions = byMessage[m.id] || [];
+        }
+    }
+
     return messages;
+}
+
+/**
+ * Toggle a participant's emoji reaction on a message. Returns the updated
+ * grouped reactions for that message.
+ */
+export async function toggleParticipantReaction(
+    conversationId: string,
+    participantId: string,
+    messageId: string,
+    emoji: string
+) {
+    // Verify membership + that the message belongs to this conversation.
+    const ok = await sql`
+        SELECT 1
+        FROM messages m
+        JOIN conversation_members cm
+          ON cm.conversation_id = m.conversation_id
+         AND cm.participant_id = ${participantId}
+         AND cm.is_active = true
+        WHERE m.id = ${messageId} AND m.conversation_id = ${conversationId}
+    `;
+    if (ok.length === 0) throw new Error('Not a member of this conversation');
+
+    const existing = await sql`
+        SELECT id FROM message_reactions
+        WHERE message_id = ${messageId} AND participant_id = ${participantId} AND emoji = ${emoji}
+    `;
+    if (existing.length > 0) {
+        await sql`DELETE FROM message_reactions WHERE id = ${existing[0].id}`;
+    } else {
+        await sql`
+            INSERT INTO message_reactions (message_id, conversation_id, participant_id, emoji)
+            VALUES (${messageId}, ${conversationId}, ${participantId}, ${emoji})
+            ON CONFLICT (message_id, participant_id, emoji) WHERE participant_id IS NOT NULL DO NOTHING
+        `;
+    }
+
+    const rows = (await sql`
+        SELECT mr.message_id, mr.emoji,
+               COALESCE(mr.user_id::text, mr.participant_id::text) AS reactor_id,
+               COALESCE(
+                   u.first_name || ' ' || u.last_name,
+                   COALESCE(p.preferred_name, p.first_name) || ' ' || p.last_name
+               ) AS reactor_name
+        FROM message_reactions mr
+        LEFT JOIN users u ON mr.user_id = u.id
+        LEFT JOIN participants p ON mr.participant_id = p.id
+        WHERE mr.message_id = ${messageId}
+        ORDER BY mr.created_at
+    `) as ReactionRow[];
+    return groupReactions(rows, participantId)[messageId] || [];
 }
 
 /**

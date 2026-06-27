@@ -3,11 +3,13 @@
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
-import { 
+import {
     ArrowLeft, Send, Loader2, AlertTriangle,
-    Check, CheckCheck, Clock
+    Check, CheckCheck, Clock, Smile, SmilePlus
 } from 'lucide-react';
 import { Message } from '@/types';
+import { QUICK_REACTIONS, EMOJI_GROUPS } from '@/lib/emoji';
+import type { ReactionGroup } from '@/lib/reactions';
 
 export default function ConversationPage() {
     const { data: session, status } = useSession();
@@ -20,9 +22,50 @@ export default function ConversationPage() {
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
     const [newMessage, setNewMessage] = useState('');
-    
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [reactingMsgId, setReactingMsgId] = useState<string | null>(null);
+
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    function insertEmoji(emoji: string) {
+        setNewMessage((prev) => prev + emoji);
+        setShowEmojiPicker(false);
+        textareaRef.current?.focus();
+    }
+
+    async function toggleReaction(messageId: string, emoji: string) {
+        setReactingMsgId(null);
+        // Optimistic: flip locally, then reconcile with the server response.
+        setMessages((prev) => prev.map((m) => {
+            if (m.id !== messageId) return m;
+            const current: ReactionGroup[] = ((m as any).reactions || []).slice();
+            const idx = current.findIndex((r) => r.emoji === emoji);
+            let next: ReactionGroup[];
+            if (idx >= 0 && current[idx].mine) {
+                const updated = { ...current[idx], count: current[idx].count - 1, mine: false };
+                next = updated.count > 0 ? current.map((r, i) => (i === idx ? updated : r)) : current.filter((_, i) => i !== idx);
+            } else if (idx >= 0) {
+                next = current.map((r, i) => (i === idx ? { ...r, count: r.count + 1, mine: true } : r));
+            } else {
+                next = [...current, { emoji, count: 1, mine: true, users: ['You'] }];
+            }
+            return { ...m, reactions: next } as Message;
+        }));
+        try {
+            const res = await fetch(`/api/messages/${conversationId}/reactions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message_id: messageId, emoji }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                setMessages((prev) => prev.map((m) => (m.id === messageId ? ({ ...m, reactions: data.reactions } as Message) : m)));
+            }
+        } catch (e) {
+            console.error('Failed to react:', e);
+        }
+    }
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -207,10 +250,48 @@ export default function ConversationPage() {
                                                 </p>
                                             )}
                                             
-                                            <div className={isOwn ? 'message-bubble-sent' : 'message-bubble-received'}>
-                                                <p className="whitespace-pre-wrap">{message.content}</p>
+                                            <div className={`relative flex items-end gap-1 ${isOwn ? 'flex-row-reverse' : ''}`}>
+                                                <div className={isOwn ? 'message-bubble-sent' : 'message-bubble-received'}>
+                                                    <p className="whitespace-pre-wrap">{message.content}</p>
+                                                </div>
+                                                {!String(message.id).startsWith('temp-') && message.sender_type !== 'system' && (
+                                                    <button
+                                                        onClick={() => setReactingMsgId(reactingMsgId === message.id ? null : message.id)}
+                                                        className="p-1 text-portal-muted hover:text-portal-primary"
+                                                        aria-label="React"
+                                                    >
+                                                        <SmilePlus className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                                {reactingMsgId === message.id && (
+                                                    <div className={`absolute z-20 -top-10 ${isOwn ? 'right-0' : 'left-0'} flex items-center gap-0.5 bg-white border border-portal-border rounded-full shadow-md px-1.5 py-1`}>
+                                                        {QUICK_REACTIONS.map((e) => (
+                                                            <button key={e} onClick={() => toggleReaction(message.id, e)}
+                                                                className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 text-base leading-none">
+                                                                {e}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
-                                            
+
+                                            {Array.isArray((message as any).reactions) && (message as any).reactions.length > 0 && (
+                                                <div className={`flex flex-wrap gap-1 mt-1 ${isOwn ? 'justify-end' : ''}`}>
+                                                    {((message as any).reactions as ReactionGroup[]).map((r) => (
+                                                        <button key={r.emoji} onClick={() => toggleReaction(message.id, r.emoji)}
+                                                            title={r.users.join(', ')}
+                                                            className={`flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs transition-colors ${
+                                                                r.mine
+                                                                    ? 'bg-portal-primary/10 border-portal-primary text-portal-primary'
+                                                                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                                            }`}>
+                                                            <span className="text-sm leading-none">{r.emoji}</span>
+                                                            <span className="font-medium">{r.count}</span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+
                                             <div className={`flex items-center gap-1 mt-1 text-xs text-portal-muted ${
                                                 isOwn ? 'justify-end mr-1' : 'ml-1'
                                             }`}>
@@ -236,6 +317,32 @@ export default function ConversationPage() {
             {/* Compose Area */}
             <div className="bg-white border-t border-portal-border p-4 safe-area-bottom">
                 <div className="flex items-end gap-2 max-w-lg mx-auto">
+                    <div className="relative flex-shrink-0">
+                        <button
+                            onClick={() => setShowEmojiPicker((s) => !s)}
+                            aria-label="Insert emoji"
+                            className="p-3 text-portal-muted hover:text-portal-secondary rounded-full hover:bg-gray-100 transition-colors"
+                        >
+                            <Smile className="w-5 h-5" />
+                        </button>
+                        {showEmojiPicker && (
+                            <div className="absolute bottom-full left-0 mb-2 w-72 bg-white border border-portal-border rounded-xl shadow-xl z-30 p-3 max-h-72 overflow-y-auto">
+                                {EMOJI_GROUPS.map((g) => (
+                                    <div key={g.label} className="mb-2 last:mb-0">
+                                        <p className="text-[11px] font-semibold text-portal-muted uppercase tracking-wider mb-1">{g.label}</p>
+                                        <div className="grid grid-cols-8 gap-0.5">
+                                            {g.emojis.map((e) => (
+                                                <button key={e} onClick={() => insertEmoji(e)}
+                                                    className="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-lg leading-none">
+                                                    {e}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                     <div className="flex-1">
                         <textarea
                             ref={textareaRef}
@@ -247,7 +354,7 @@ export default function ConversationPage() {
                             className="w-full px-4 py-3 border border-portal-border rounded-2xl resize-none focus:ring-2 focus:ring-portal-primary/20 focus:border-portal-primary"
                         />
                     </div>
-                    
+
                     <button
                         onClick={handleSend}
                         disabled={!newMessage.trim() || sending}
