@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ThemeProvider } from 'styled-components';
 import {
     MeetingProvider,
+    BackgroundBlurProvider,
     darkTheme,
     GlobalStyles,
     useMeetingManager,
@@ -21,7 +22,7 @@ import {
     ControlBar,
     ControlBarButton,
     AudioInputControl,
-    VideoInputControl,
+    VideoInputBackgroundBlurControl,
     AudioOutputControl,
     ContentShareControl,
     Phone,
@@ -142,7 +143,10 @@ function CallInner({ meeting, attendee, title, subtitle, leaveLabel = 'Leave', a
 
             <ControlBar layout="bottom" showLabels>
                 <AudioInputControl />
-                <VideoInputControl />
+                {/* Camera control whose menu includes "Enable background blur". Blur runs
+                    in the browser (WASM from AWS's SDK asset CDN); video never leaves the
+                    device un-blurred once it is on. */}
+                <VideoInputBackgroundBlurControl />
                 <AudioOutputControl />
                 {allowContentShare && <ContentShareControl />}
                 <ControlBarButton icon={<Phone />} onClick={leave} label={leaveLabel} />
@@ -155,9 +159,11 @@ export default function VideoCall(props: VideoCallProps) {
     return (
         <ThemeProvider theme={darkTheme}>
             <GlobalStyles />
-            <MeetingProvider>
-                <CallInner {...props} />
-            </MeetingProvider>
+            <BackgroundBlurProvider>
+                <MeetingProvider>
+                    <CallInner {...props} />
+                </MeetingProvider>
+            </BackgroundBlurProvider>
         </ThemeProvider>
     );
 }
