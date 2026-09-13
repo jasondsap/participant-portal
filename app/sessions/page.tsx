@@ -11,7 +11,7 @@ import Link from 'next/link';
 import {
     ArrowLeft, Calendar, Clock, User, Users,
     Building2, Loader2, ChevronRight, Target,
-    CalendarCheck, History, AlertCircle, MapPin
+    CalendarCheck, History, AlertCircle, MapPin, Video
 } from 'lucide-react';
 import { BottomNav } from '@/components/layout/BottomNav';
 
@@ -289,6 +289,17 @@ function SessionCard({ session, isNext }: { session: Session; isNext?: boolean }
                         {!formattedTime && ' — check with your PSS for the exact time'}
                     </p>
                 </div>
+            )}
+
+            {/* Join video session - telehealth sessions on the day */}
+            {session.setting === 'telehealth' && ['planned', 'approved'].includes(session.status) && !overdue && (
+                <Link
+                    href={`/telehealth/${session.id}`}
+                    className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 text-sm font-semibold text-white bg-portal-primary rounded-lg hover:opacity-90"
+                >
+                    <Video className="w-4 h-4" />
+                    {isToday(session.planned_date) ? 'Join video session' : 'Video session details'}
+                </Link>
             )}
 
             {/* Add to Calendar - only for upcoming sessions */}
