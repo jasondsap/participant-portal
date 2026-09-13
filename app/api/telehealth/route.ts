@@ -17,6 +17,8 @@ import {
 
 export const runtime = 'nodejs';
 
+const normHex = (v: unknown): string | null => { const m = /^#?([0-9a-f]{6})$/i.exec(String(v || '').trim()); return m ? `#${m[1].toUpperCase()}` : null; };
+
 function chime() {
     return new ChimeSDKMeetingsClient({
         region: process.env.CHIME_CONTROL_REGION || 'us-east-1',
@@ -32,7 +34,8 @@ async function loadOwnPlan(planId: string, participantId: string) {
         SELECT sp.id, sp.organization_id, sp.participant_id, sp.setting, sp.status, sp.planned_date, sp.planned_time, sp.planned_duration,
                sp.video_meeting_id, sp.video_started_at, sp.video_ended_at,
                u.first_name AS pss_first_name, u.last_name AS pss_last_name,
-               (o.settings->'features'->'add') ? 'telehealth' AS telehealth_enabled
+               (o.settings->'features'->'add') ? 'telehealth' AS telehealth_enabled,
+               o.name AS org_name, o.settings->'branding' AS branding
         FROM service_plans sp
         LEFT JOIN users u ON u.id = sp.user_id
         JOIN organizations o ON o.id = sp.organization_id
@@ -80,6 +83,12 @@ export async function GET(req: NextRequest) {
                 ended: !!plan.video_ended_at,
             },
             meetingActive: !!live,
+            brand: {
+                orgName: plan.org_name,
+                primaryColor: normHex(plan.branding?.primary_color) || '#1A73A8',
+                accentColor: normHex(plan.branding?.accent_color) || '#30B27A',
+                logoUrl: plan.branding?.logo_on_brand_url || plan.branding?.logo_url || null,
+            },
         });
     } catch (error: any) {
         if (error?.message === 'Unauthorized') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

@@ -15,6 +15,7 @@ const VideoCall = dynamic(() => import('@/components/telehealth/VideoCall'), { s
 interface Info {
     plan: { id: string; setting: string; status: string; planned_date: string; planned_time: string | null; planned_duration: number; pss_name: string | null; ended: boolean };
     meetingActive: boolean;
+    brand?: { orgName: string; primaryColor: string; accentColor: string; logoUrl: string | null };
 }
 
 const fmtTime = (t?: string | null) => { if (!t) return ''; const [h, m] = t.split(':').map(Number); return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`; };
@@ -78,6 +79,7 @@ export default function ParticipantTelehealthPage() {
                 title={info.plan.pss_name ? `Session with ${info.plan.pss_name}` : 'Your session'}
                 subtitle={`${fmtDate(info.plan.planned_date)}${info.plan.planned_time ? ` · ${fmtTime(info.plan.planned_time)}` : ''}`}
                 leaveLabel="Leave"
+                backdrop={info.brand ? { orgName: info.brand.orgName, primaryColor: info.brand.primaryColor, accentColor: info.brand.accentColor, logoUrl: info.brand.logoUrl } : null}
                 onLeave={onLeave}
             />
         );
