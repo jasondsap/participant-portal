@@ -24,7 +24,7 @@ const fmtDate = (d: string) => new Date(String(d).slice(0, 10) + 'T12:00:00').to
 export default function ParticipantTelehealthPage() {
     const params = useParams();
     const router = useRouter();
-    const { status: authStatus } = useSession();
+    const { data: session, status: authStatus } = useSession();
     const planId = String(params.id);
 
     const [info, setInfo] = useState<Info | null>(null);
@@ -79,8 +79,9 @@ export default function ParticipantTelehealthPage() {
                 title={info.plan.pss_name ? `Session with ${info.plan.pss_name}` : 'Your session'}
                 subtitle={`${fmtDate(info.plan.planned_date)}${info.plan.planned_time ? ` · ${fmtTime(info.plan.planned_time)}` : ''}`}
                 leaveLabel="Leave"
-                backdrop={info.brand ? { orgName: info.brand.orgName, primaryColor: info.brand.primaryColor, accentColor: info.brand.accentColor, logoUrl: info.brand.logoUrl } : null}
+                defaultDisplayName={(session as any)?.participant?.preferredName || (session as any)?.participant?.firstName || null}
                 onLeave={onLeave}
+                onCancel={() => { setJoin(null); setPhase('waiting'); load(); }}
             />
         );
     }

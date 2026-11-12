@@ -131,7 +131,7 @@ export default function DashboardPage() {
             let assessmentStats = { total: 0, latestScore: undefined as number | undefined, latestType: undefined as string | undefined, latestDate: undefined as string | undefined };
             if (assessData.success && assessData.assessments?.length > 0) {
                 const latest = assessData.assessments[0];
-                const maxScore = latest.assessment_type === 'mirc28' ? 140 : 60;
+                const maxScore = latest.assessment_type === 'wri' ? 100 : latest.assessment_type === 'mirc28' ? 140 : 60;
                 assessmentStats = {
                     total: assessData.total,
                     latestScore: Math.round((latest.total_score / maxScore) * 100),

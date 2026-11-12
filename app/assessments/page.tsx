@@ -1,6 +1,9 @@
 // app/assessments/page.tsx
 // Participant Portal - Assessment Hub
-// Shows past assessments, trends, and option to take new BARC-10
+// Shows past assessments, trends, and option to take new BARC-10. Workforce
+// Readiness Index rows (assessment_type 'wri', scored 0-100 by the staff app)
+// render with their track and domain bars; open invitation links from staff
+// show as a "complete it now" card.
 
 'use client';
 
@@ -73,10 +76,33 @@ interface Assessment {
     created_at: string;
 }
 
+interface PendingInvite {
+    id: string;
+    assessment_type: string;
+    expires_at: string;
+    url: string | null;
+}
+
+// Workforce Readiness Index (staff app: lib/wri). Labels mirror the staff tool.
+const WRI_DOMAIN_LABELS: Record<string, string> = {
+    basic_stability: 'Basic Stability', transportation: 'Transportation', legal_id: 'Legal & ID',
+    recovery_stability: 'Recovery', mental_health: 'Mental Health', physical_health: 'Physical Health',
+    routine_time: 'Routine & Time', work_skills: 'Work Skills', job_search: 'Job Search', support_accountability: 'Support System',
+};
+const WRI_TRACKS: Record<string, { level: string; color: string; bg: string; border: string }> = {
+    stabilization:  { level: 'Stabilization Needed',     color: 'text-rose-700',    bg: 'bg-rose-50',    border: 'border-rose-200' },
+    pre_employment: { level: 'Pre-Employment Readiness', color: 'text-amber-700',   bg: 'bg-amber-50',   border: 'border-amber-200' },
+    job_placement:  { level: 'Job Ready',                color: 'text-blue-700',    bg: 'bg-blue-50',    border: 'border-blue-200' },
+    advancement:    { level: 'Advancement Ready',        color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+};
+const INVITE_LABELS: Record<string, string> = { barc10: 'BARC-10', mirc28: 'MIRC-28', wri: 'Workforce Readiness Index' };
+const isWri = (type: string) => type === 'wri';
+
 export default function AssessmentsPage() {
     const { data: session, status } = useSession();
     const router = useRouter();
     const [assessments, setAssessments] = useState<Assessment[]>([]);
+    const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -97,6 +123,7 @@ export default function AssessmentsPage() {
             const data = await res.json();
             if (data.success) {
                 setAssessments(data.assessments || []);
+                setPendingInvites((data.pending_invites || []).filter((i: PendingInvite) => !!i.url));
             }
         } catch (error) {
             console.error('Error fetching assessments:', error);
@@ -105,7 +132,7 @@ export default function AssessmentsPage() {
         }
     }
 
-    const getMaxScore = (type: string) => type === 'mirc28' ? 140 : 60;
+    const getMaxScore = (type: string) => isWri(type) ? 100 : type === 'mirc28' ? 140 : 60;
     const getPercentage = (score: number, type: string) => Math.round((score / getMaxScore(type)) * 100);
 
     const getInterpretation = (pct: number) => {
@@ -115,12 +142,45 @@ export default function AssessmentsPage() {
         return { level: 'Early Foundation', color: 'text-rose-700', bg: 'bg-rose-50', border: 'border-rose-200' };
     };
 
-    const getTypeLabel = (type: string) => type === 'mirc28' ? 'MIRC-28 (Comprehensive)' : 'BARC-10 (Quick Check)';
+    const getTypeLabel = (type: string) => isWri(type) ? 'Workforce Readiness Index' : type === 'mirc28' ? 'MIRC-28 (Comprehensive)' : 'BARC-10 (Quick Check)';
+
+    // WRI rows carry their readiness track in domain_scores; recovery capital rows use the percentage bands.
+    const interpretationFor = (a: Assessment, pct: number) => {
+        if (isWri(a.assessment_type)) {
+            const track = a.domain_scores && typeof a.domain_scores === 'object' ? a.domain_scores.track : null;
+            if (track && WRI_TRACKS[track]) return WRI_TRACKS[track];
+        }
+        return getInterpretation(pct);
+    };
+
+    // Domain bars: recovery capital rows store {domain: number|{percentage}}; WRI rows store domainScores10 (0-10 each).
+    const domainBarsFor = (a: Assessment): Array<{ key: string; label: string; pct: number; display: string; color: string }> => {
+        if (isWri(a.assessment_type)) {
+            const d10 = a.domain_scores?.domainScores10 || {};
+            return Object.entries(d10).map(([key, v]: [string, any]) => ({
+                key, label: WRI_DOMAIN_LABELS[key] || key,
+                pct: Math.round((Number(v) / 10) * 100), display: `${Number(v).toFixed(1)}/10`,
+                color: Number(v) >= 7.5 ? '#10B981' : Number(v) >= 5 ? '#F59E0B' : '#EF4444',
+            }));
+        }
+        return Object.entries(a.domain_scores || {}).flatMap(([key, value]: [string, any]) => {
+            const config = DOMAIN_CONFIG[key];
+            if (!config) return [];
+            const pct = typeof value === 'object' && value?.percentage
+                ? value.percentage
+                : typeof value === 'number'
+                    ? Math.round((value / (a.assessment_type === 'mirc28' ? 28 :
+                        key === 'human' ? 30 : key === 'social' ? 12 : key === 'physical' ? 6 : 12)) * 100)
+                    : 0;
+            const display = typeof value === 'object' && value?.percentage ? `${value.percentage}%` : String(value);
+            return [{ key, label: config.shortName, pct, display, color: config.color }];
+        });
+    };
 
     // Get the most recent assessment for the summary card
     const latestAssessment = assessments[0];
     const latestPercentage = latestAssessment ? getPercentage(latestAssessment.total_score, latestAssessment.assessment_type) : 0;
-    const latestInterpretation = latestAssessment ? getInterpretation(latestPercentage) : null;
+    const latestInterpretation = latestAssessment ? interpretationFor(latestAssessment, latestPercentage) : null;
 
     // Calculate trend (compare latest to second-latest of same type)
     const getTrend = () => {
@@ -189,38 +249,23 @@ export default function AssessmentsPage() {
 
                             {/* Domain bars for latest */}
                             <div className="space-y-2.5 mt-4">
-                                {Object.entries(latestAssessment.domain_scores || {}).map(([key, value]: [string, any]) => {
-                                    const config = DOMAIN_CONFIG[key];
-                                    if (!config) return null;
-                                    
-                                    // Handle both formats: raw number or {raw, max, percentage} object
-                                    const pct = typeof value === 'object' && value?.percentage
-                                        ? value.percentage
-                                        : typeof value === 'number'
-                                            ? Math.round((value / (latestAssessment.assessment_type === 'mirc28' ? 28 : 
-                                                key === 'human' ? 30 : key === 'social' ? 12 : key === 'physical' ? 6 : 12)) * 100)
-                                            : 0;
-
-                                    return (
-                                        <div key={key}>
-                                            <div className="flex justify-between text-xs mb-1">
-                                                <span className="font-medium text-portal-text">{config.shortName}</span>
-                                                <span className="text-portal-muted">
-                                                    {typeof value === 'object' && value?.percentage ? `${value.percentage}%` : value}
-                                                </span>
-                                            </div>
-                                            <div className="h-2 bg-white/80 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full rounded-full transition-all duration-500"
-                                                    style={{
-                                                        width: `${Math.min(pct, 100)}%`,
-                                                        backgroundColor: config.color,
-                                                    }}
-                                                />
-                                            </div>
+                                {domainBarsFor(latestAssessment).map((bar) => (
+                                    <div key={bar.key}>
+                                        <div className="flex justify-between text-xs mb-1">
+                                            <span className="font-medium text-portal-text">{bar.label}</span>
+                                            <span className="text-portal-muted">{bar.display}</span>
                                         </div>
-                                    );
-                                })}
+                                        <div className="h-2 bg-white/80 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full rounded-full transition-all duration-500"
+                                                style={{
+                                                    width: `${Math.min(bar.pct, 100)}%`,
+                                                    backgroundColor: bar.color,
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
 
                             <p className="text-xs text-portal-muted mt-3">
@@ -228,6 +273,28 @@ export default function AssessmentsPage() {
                             </p>
                         </div>
                     )}
+
+                    {/* Open invitation links from staff (completed on the staff app, scored there) */}
+                    {pendingInvites.map((invite) => (
+                        <a key={invite.id} href={invite.url!} className="block">
+                            <div className="card p-5 border-2 border-portal-primary/40 bg-portal-primary/5 hover:border-portal-primary/70 transition-all cursor-pointer">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-xl bg-portal-primary/15 flex items-center justify-center flex-shrink-0">
+                                        <ClipboardCheck className="w-6 h-6 text-portal-primary" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="font-semibold text-portal-text">
+                                            Complete your {INVITE_LABELS[invite.assessment_type] || invite.assessment_type}
+                                        </h3>
+                                        <p className="text-sm text-portal-muted">
+                                            Your team asked you to fill this out · link expires {new Date(invite.expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                        </p>
+                                    </div>
+                                    <ChevronRight className="w-5 h-5 text-portal-muted flex-shrink-0" />
+                                </div>
+                            </div>
+                        </a>
+                    ))}
 
                     {/* Take BARC-10 Card */}
                     <Link href="/assessments/take">
@@ -271,7 +338,7 @@ export default function AssessmentsPage() {
                             <div className="space-y-3">
                                 {assessments.map((assessment) => {
                                     const pct = getPercentage(assessment.total_score, assessment.assessment_type);
-                                    const interp = getInterpretation(pct);
+                                    const interp = interpretationFor(assessment, pct);
                                     const isBarc = assessment.assessment_type === 'barc10';
 
                                     return (
@@ -306,7 +373,7 @@ export default function AssessmentsPage() {
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-2 mb-0.5">
                                                             <span className="font-semibold text-portal-text text-sm">
-                                                                {isBarc ? 'BARC-10' : 'MIRC-28'}
+                                                                {isWri(assessment.assessment_type) ? 'Workforce Readiness' : isBarc ? 'BARC-10' : 'MIRC-28'}
                                                             </span>
                                                             <span className={`text-xs px-2 py-0.5 rounded-full ${interp.bg} ${interp.color}`}>
                                                                 {interp.level}

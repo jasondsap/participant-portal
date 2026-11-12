@@ -7,11 +7,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { sql, query } from "@/lib/db";
 
-// GET - List participant's assessments (both BARC-10 and MIRC-28)
+// Base URL of the staff app, where tokenized invitation links are completed
+// (e.g. https://app.peersupportstudio.com). Unset → pending invites are listed
+// without a link and the portal hides the card.
+function inviteBaseUrl(): string | null {
+    const base = process.env.STUDIO_URL || process.env.NEXT_PUBLIC_STUDIO_URL || null;
+    return base ? base.replace(/\/+$/, '') : null;
+}
+
+// GET - List participant's assessments (BARC-10, MIRC-28, Workforce Readiness
+// Index) plus any open invitation links the staff app has sent them.
 export async function GET(req: NextRequest) {
     try {
         const session = await requireAuth();
         const participantId = session.participantId;
+        const organizationId = session.organizationId;
 
         if (!participantId) {
             return NextResponse.json(
@@ -58,10 +68,34 @@ export async function GET(req: NextRequest) {
             `;
         }
 
+        // Open invitations (sent by staff, not yet completed or expired). The
+        // participant completes them on the staff app's public /assessment/[token]
+        // page, which scores server-side; the result lands in the same table.
+        let pending_invites: Array<{ id: string; assessment_type: string; expires_at: string; url: string | null }> = [];
+        if (!assessmentType) {
+            const base = inviteBaseUrl();
+            const invites = (await sql`
+                SELECT id, token, assessment_type, expires_at
+                FROM assessment_invitations
+                WHERE participant_id = ${participantId}
+                  AND organization_id = ${organizationId}
+                  AND status IN ('sent', 'opened')
+                  AND expires_at > NOW()
+                ORDER BY created_at DESC
+            `) as any[];
+            pending_invites = invites.map((i: any) => ({
+                id: i.id,
+                assessment_type: i.assessment_type,
+                expires_at: i.expires_at,
+                url: base ? `${base}/assessment/${i.token}` : null,
+            }));
+        }
+
         return NextResponse.json({
             success: true,
             assessments: assessments || [],
             total: assessments?.length || 0,
+            pending_invites,
         });
 
     } catch (error) {
