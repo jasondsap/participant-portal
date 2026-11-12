@@ -14,6 +14,7 @@ import {
     Calendar, User, MapPin, BookHeart
 } from 'lucide-react';
 import { BottomNav } from '@/components/layout/BottomNav';
+import { InterviewPracticeTile } from '@/components/InterviewPracticeTile';
 
 interface NextSessionInfo {
     id: string;
@@ -287,6 +288,7 @@ export default function DashboardPage() {
                                 : 'Recovery Capital'
                             }
                         />
+                        <InterviewPracticeTile />
                         <Link href="/journal" className="col-span-2">
                             <div className="card-hover p-4 flex items-center gap-4">
                                 <div className="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-500 flex-shrink-0">
