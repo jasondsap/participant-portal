@@ -163,7 +163,7 @@ export default function TakeAssessmentPage() {
         return (
             <div className="min-h-screen bg-portal-background">
                 <header className="bg-white border-b border-portal-border px-6 pt-12 pb-4 safe-area-top">
-                    <div className="max-w-lg mx-auto flex items-center gap-3">
+                    <div className="portal-col flex items-center gap-3">
                         <button onClick={() => router.push('/assessments')} className="p-1.5 -ml-1.5 hover:bg-gray-100 rounded-lg">
                             <ArrowLeft className="w-5 h-5 text-portal-text" />
                         </button>
@@ -172,7 +172,7 @@ export default function TakeAssessmentPage() {
                 </header>
 
                 <main className="px-6 py-8">
-                    <div className="max-w-lg mx-auto space-y-6">
+                    <div className="portal-col space-y-6">
                         <div className="card p-6 text-center">
                             <div className="w-16 h-16 bg-portal-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                                 <Sparkles className="w-8 h-8 text-portal-primary" />
@@ -236,13 +236,13 @@ export default function TakeAssessmentPage() {
         return (
             <div className="min-h-screen bg-portal-background">
                 <header className="bg-white border-b border-portal-border px-6 pt-12 pb-4 safe-area-top">
-                    <div className="max-w-lg mx-auto">
+                    <div className="portal-col">
                         <h1 className="text-xl font-bold text-portal-text">Your Results</h1>
                     </div>
                 </header>
 
                 <main className="px-6 py-6">
-                    <div className="max-w-lg mx-auto space-y-5">
+                    <div className="portal-col space-y-5">
                         {/* Score Card */}
                         <div className="card p-6 text-center">
                             <div className="mb-4">
@@ -353,7 +353,7 @@ export default function TakeAssessmentPage() {
         <div className="min-h-screen bg-portal-background flex flex-col">
             {/* Header with progress */}
             <header className="bg-white border-b border-portal-border px-6 pt-12 pb-3 safe-area-top">
-                <div className="max-w-lg mx-auto">
+                <div className="portal-col">
                     <div className="flex items-center justify-between mb-3">
                         <button
                             onClick={() => {
@@ -387,7 +387,7 @@ export default function TakeAssessmentPage() {
             {/* Error message */}
             {error && (
                 <div className="px-6 pt-4">
-                    <div className="max-w-lg mx-auto bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+                    <div className="portal-col bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
                         {error}
                     </div>
                 </div>
@@ -395,7 +395,7 @@ export default function TakeAssessmentPage() {
 
             {/* Question */}
             <main className="flex-1 flex flex-col px-6 py-6">
-                <div className="max-w-lg mx-auto flex-1 flex flex-col w-full">
+                <div className="portal-col flex-1 flex flex-col w-full">
                     {/* Domain tag */}
                     <div className="mb-4">
                         <span

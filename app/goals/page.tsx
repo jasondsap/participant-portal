@@ -63,10 +63,10 @@ export default function GoalsPage() {
     const completedCount = goals.filter(g => g.status === 'completed').length;
 
     return (
-        <div className="min-h-screen bg-portal-background pb-20">
+        <div className="min-h-screen bg-portal-background pb-20 lg:pb-10">
             {/* Header */}
             <header className="bg-white border-b border-portal-border px-6 py-4 sticky top-0 z-40 safe-area-top">
-                <div className="max-w-lg mx-auto">
+                <div className="portal-col">
                     <h1 className="text-xl font-bold text-portal-text">My Goals</h1>
                     <p className="text-sm text-portal-muted">
                         Track your recovery journey
@@ -75,7 +75,7 @@ export default function GoalsPage() {
             </header>
 
             <main className="px-6 py-4">
-                <div className="max-w-lg mx-auto">
+                <div className="portal-col">
                     {/* Stats */}
                     <div className="grid grid-cols-2 gap-4 mb-6">
                         <div className="card p-4 text-center">

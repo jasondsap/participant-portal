@@ -65,9 +65,9 @@ export default function InterviewPracticePage() {
     const finished = practices.filter(p => p.status === 'completed');
 
     return (
-        <div className="min-h-screen bg-portal-background pb-20">
+        <div className="min-h-screen bg-portal-background pb-20 lg:pb-10">
             <header className="bg-white border-b border-portal-border px-6 py-4 sticky top-0 z-40 safe-area-top">
-                <div className="max-w-lg lg:max-w-3xl mx-auto flex items-center gap-3">
+                <div className="portal-col flex items-center gap-3">
                     <Link href="/dashboard" aria-label="Back to home" className="p-2 -ml-2 rounded-lg text-portal-muted hover:text-portal-text"><ArrowLeft className="w-5 h-5" aria-hidden="true" /></Link>
                     <div>
                         <h1 className="text-xl font-bold text-portal-text">Interview practice</h1>
@@ -77,7 +77,7 @@ export default function InterviewPracticePage() {
             </header>
 
             <main className="px-6 py-4">
-                <div className="max-w-lg lg:max-w-3xl mx-auto space-y-4">
+                <div className="portal-col space-y-4">
                     {error && <p role="alert" className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">{error}</p>}
 
                     {!enabled ? (

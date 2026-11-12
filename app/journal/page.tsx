@@ -538,7 +538,7 @@ export default function JournalPage() {
         <div className="min-h-screen bg-[#F8FAFB]">
             {/* Header */}
             <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
-                <div className="max-w-2xl mx-auto px-4 py-3">
+                <div className="portal-col px-4 py-3">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <button onClick={() => router.push('/dashboard')} className="p-2 hover:bg-gray-100 rounded-lg">
@@ -561,7 +561,7 @@ export default function JournalPage() {
                 </div>
             </div>
 
-            <main className="max-w-2xl mx-auto px-4 py-6 space-y-5">
+            <main className="portal-col px-4 py-6 space-y-5">
                 {/* Composer */}
                 {showComposer && (
                     <NewEntryComposer

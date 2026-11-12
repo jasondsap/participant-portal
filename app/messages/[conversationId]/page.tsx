@@ -219,7 +219,7 @@ export default function ConversationPage() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 md:px-[max(1rem,calc((100%-42rem)/2))] lg:px-[max(1rem,calc((100%-48rem)/2))] space-y-4">
                 {messages.length === 0 ? (
                     <div className="text-center text-portal-muted py-8">
                         <p>No messages yet</p>
@@ -316,7 +316,7 @@ export default function ConversationPage() {
 
             {/* Compose Area */}
             <div className="bg-white border-t border-portal-border p-4 safe-area-bottom">
-                <div className="flex items-end gap-2 max-w-lg mx-auto">
+                <div className="flex items-end gap-2 portal-col">
                     <div className="relative flex-shrink-0">
                         <button
                             onClick={() => setShowEmojiPicker((s) => !s)}

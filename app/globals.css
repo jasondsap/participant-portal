@@ -88,6 +88,16 @@ input, textarea, select {
   @apply btn text-portal-muted hover:bg-gray-100 hover:text-portal-text focus:ring-portal-primary;
 }
 
+/* Page column. Phone: the original 512px column. Tablet (md): wider. Computer (lg): wider again, beside the side menu
+   (components/layout/AppFrame.tsx). Every signed-in page uses one of these two, so the width is set in one place. */
+.portal-col {
+  @apply mx-auto w-full max-w-lg md:max-w-2xl lg:max-w-3xl;
+}
+
+.portal-col-wide {
+  @apply mx-auto w-full max-w-lg md:max-w-2xl lg:max-w-5xl;
+}
+
 /* Card Styles */
 .card {
   @apply bg-white rounded-xl shadow-sm border border-portal-border;

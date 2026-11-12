@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/Providers';
+import { AppFrame } from '@/components/layout/AppFrame';
 
 
 const inter = Inter({ subsets: ['latin'] });
@@ -30,8 +31,6 @@ export const viewport: Viewport = {
     themeColor: '#5B7C99',
     width: 'device-width',
     initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
     viewportFit: 'cover',
 };
 
@@ -52,7 +51,7 @@ export default function RootLayout({
             </head>
             <body className={inter.className}>
                 <Providers>
-                    {children}
+                    <AppFrame>{children}</AppFrame>
                 </Providers>
             </body>
         </html>

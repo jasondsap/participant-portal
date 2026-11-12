@@ -180,10 +180,10 @@ export default function DashboardPage() {
     const nextSessionSoon = nextSession ? isSessionSoon(nextSession.planned_date) : false;
 
     return (
-        <div className="min-h-screen bg-portal-background pb-20">
+        <div className="min-h-screen bg-portal-background pb-20 lg:pb-10">
             {/* Header */}
             <header className="bg-portal-primary text-white px-6 pt-12 pb-8 safe-area-top">
-                <div className="max-w-lg mx-auto">
+                <div className="portal-col-wide">
                     <p className="text-white/70 text-sm mb-1">Welcome back,</p>
                     <h1 className="text-2xl font-bold">{participantName}</h1>
                     {stats?.pssName && (
@@ -195,7 +195,7 @@ export default function DashboardPage() {
             </header>
 
             <main className="px-6 -mt-4">
-                <div className="max-w-lg mx-auto space-y-4">
+                <div className="portal-col-wide space-y-4">
 
                     {/* ─── Next Session Banner ─────────────────────────────────── */}
                     {nextSession && (
@@ -256,7 +256,7 @@ export default function DashboardPage() {
                     )}
 
                     {/* ─── Quick Action Cards ──────────────────────────────────── */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                         <QuickActionCard
                             href="/messages"
                             icon={<MessageCircle className="w-6 h-6" />}

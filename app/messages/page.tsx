@@ -54,10 +54,10 @@ export default function MessagesPage() {
     }
 
     return (
-        <div className="min-h-screen bg-portal-background pb-20">
+        <div className="min-h-screen bg-portal-background pb-20 lg:pb-10">
             {/* Header */}
             <header className="bg-white border-b border-portal-border px-6 py-4 sticky top-0 z-40 safe-area-top">
-                <div className="max-w-lg mx-auto">
+                <div className="portal-col">
                     <h1 className="text-xl font-bold text-portal-text">Messages</h1>
                     <p className="text-sm text-portal-muted">
                         Chat with your peer support specialist
@@ -66,7 +66,7 @@ export default function MessagesPage() {
             </header>
 
             <main className="px-6 py-4">
-                <div className="max-w-lg mx-auto">
+                <div className="portal-col">
                     {conversations.length === 0 ? (
                         <div className="text-center py-12">
                             <div className="w-16 h-16 bg-portal-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">

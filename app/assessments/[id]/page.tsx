@@ -150,10 +150,10 @@ export default function AssessmentDetailPage() {
     }
 
     return (
-        <div className="min-h-screen bg-portal-background pb-24">
+        <div className="min-h-screen bg-portal-background pb-24 lg:pb-10">
             {/* Header */}
             <header className="bg-white border-b border-portal-border px-6 pt-12 pb-0 safe-area-top">
-                <div className="max-w-lg mx-auto">
+                <div className="portal-col">
                     <div className="flex items-center gap-3 mb-3">
                         <button onClick={() => router.push('/assessments')} className="p-1.5 -ml-1.5 hover:bg-gray-100 rounded-lg">
                             <ArrowLeft className="w-5 h-5 text-portal-text" />
@@ -193,7 +193,7 @@ export default function AssessmentDetailPage() {
             </header>
 
             <main className="px-6 py-6">
-                <div className="max-w-lg mx-auto space-y-5">
+                <div className="portal-col space-y-5">
 
                     {/* ─── OVERVIEW TAB ─────────────────────────────────────────── */}
                     {activeTab === 'overview' && (
